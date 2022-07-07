@@ -68,5 +68,5 @@ void loop() {
   // Displays the distance on the Serial Monitor
   Serial.print("Distance: ");
   Serial.print(distance);
-  Serial.println(" cm");
+  Serial.println("m");
 }
