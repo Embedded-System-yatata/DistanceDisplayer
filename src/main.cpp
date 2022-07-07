@@ -7,6 +7,7 @@
 
 
 float speedWave = 343;
+int nMeasures = 15;
 
 
 long durationMS; // variable for the duration of sound wave travel
@@ -50,19 +51,43 @@ void setup() {
 }
 
 
+
+
+float measure (){
+
+  float m = 0;
+  float measures [nMeasures];
+
+
+  int i;
+  for (i=0; i< nMeasures; i++){
+
+    // Clears the trigPin condition
+    digitalWrite(pinSonarTriger, LOW);
+    delayMicroseconds(2);
+    // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
+    digitalWrite(pinSonarTriger, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(pinSonarTriger, LOW);
+    // Reads the echoPin, returns the sound wave travel time in microseconds
+    durationMS = pulseIn(pinSonarEcho, HIGH);
+    // Calculating the distance
+    measures[i] = durationMS*pow(10,-6) * speedWave / 2; // Speed of sound wave divided by 2 (go and back)
+
+
+  }
+
+
+  //outliers id.
+  //average
+
+
+  return m;
+}
+
+
 void loop() {
-  // Clears the trigPin condition
-  digitalWrite(pinSonarTriger, LOW);
-  delayMicroseconds(2);
-  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
-  digitalWrite(pinSonarTriger, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(pinSonarTriger, LOW);
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  durationMS = pulseIn(pinSonarEcho, HIGH);
-  // Calculating the distance
-  //distance = expotential(durationMS,-6) * speedWave / 2; // Speed of sound wave divided by 2 (go and back)
-  distance = durationMS*pow(10,-6) * speedWave / 2;
+  
   //Serial.printf("%0.8f",float(1/pow(durationMS,6)));
   //distance = durationMS*0.034/2;
   // Displays the distance on the Serial Monitor
