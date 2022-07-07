@@ -41,6 +41,21 @@ float expotential (float base, float expoente){
 }
 
 
+
+float average(float numbers[]){
+
+  int n = sizeof(numbers)/sizeof(float);
+  float av = 0;
+
+  int i;
+  for(i=0; i<n; i++){
+    av += numbers[n];
+  }
+
+  return av/n;
+}
+
+
 void setup() {
   pinMode(pinSonarTriger, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(pinSonarEcho, INPUT); // Sets the echoPin as an INPUT
