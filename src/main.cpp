@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <math.h>
 
 
 
@@ -79,7 +80,52 @@ float* orderAsc(float numbers []){
     }
   }
 
+  return numbers;
+
 }
+
+float median (float numbers []){
+
+  
+
+  if ( n % 2 == 0)
+    return (numbers[n/2] + numbers[n/2+1])/2.0;
+  else
+    return numbers[n/2 + 1];
+
+}
+
+float Q1 (float numbers[]){
+
+  int n = sizeof(numbers)/sizeof(float);
+  return numbers[round((n + 1)/4)]; 
+
+}
+
+float Q3 (float numbers[]){
+
+  int n = sizeof(numbers)/sizeof(float);
+  return numbers[round(3*(n + 1)/4)]; 
+
+}
+
+
+float IQR (float Q1, float Q3){
+
+  return Q3-Q1;
+}
+
+
+float upperFence (float IQR, float Q3){
+
+  return Q3 + (1.5 * IQR);
+}
+
+float lowerFence (float IQR, float Q1){
+
+  return Q1 - (1.5 * IQR);
+}
+
 
 
 
