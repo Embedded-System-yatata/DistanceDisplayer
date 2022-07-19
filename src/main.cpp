@@ -86,7 +86,7 @@ float* orderAsc(float numbers []){
 
 float median (float numbers []){
 
-  
+  int n = sizeof(numbers)/sizeof(float);
 
   if ( n % 2 == 0)
     return (numbers[n/2] + numbers[n/2+1])/2.0;
