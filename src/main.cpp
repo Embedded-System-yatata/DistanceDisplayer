@@ -56,6 +56,33 @@ float average(float numbers[]){
 }
 
 
+
+float* orderAsc(float numbers []){
+
+  int i = 0;
+  int j = 0;
+  int a = 0;
+
+  int n = sizeof(numbers)/sizeof(float);
+
+  for (i = 0; i < n; ++i){
+ 
+    for (j = i + 1; j < n; ++j){
+ 
+      if (numbers[i] > numbers[j]){
+ 
+        a =  numbers[i];
+        numbers[i] = numbers[j];
+        numbers[j] = a;
+ 
+      }
+    }
+  }
+
+}
+
+
+
 void setup() {
   pinMode(pinSonarTriger, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(pinSonarEcho, INPUT); // Sets the echoPin as an INPUT
