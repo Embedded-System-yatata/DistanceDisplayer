@@ -12,7 +12,7 @@ int prevState_ButtonMeasure = 0;
 
 
 float speedWave = 343;
-int nMeasures = 15;
+int nMeasures = 50;
 
 
 long durationMS; // variable for the duration of sound wave travel
@@ -50,15 +50,19 @@ float expotential (float base, float expoente){
 
 float average(float numbers[]){
 
-  int n = sizeof(numbers)/sizeof(float);
+  //int n = sizeof(numbers)/sizeof(numbers[0]);
   float av = 0;
-
+  /*Serial.println(numbers[5]);
+  Serial.println(sizeof(numbers));
+  Serial.println(sizeof(float));
+  Serial.println(n);
+  */
   int i;
-  for(i=0; i<n; i++){
-    av += numbers[n];
+  for(i=0; i < nMeasures; i++){
+    av += numbers[i];
   }
 
-  return av/n;
+  return av/nMeasures;
 }
 
 
@@ -153,7 +157,7 @@ float measure (){
 
 
   int i;
-  for (i=0; i< nMeasures; i++){
+  for (i=0; i < nMeasures; i++){
 
     // Clears the trigPin condition
     digitalWrite(pinSonarTriger, LOW);
@@ -166,7 +170,8 @@ float measure (){
     durationMS = pulseIn(pinSonarEcho, HIGH);
     // Calculating the distance
     measures[i] = durationMS*pow(10,-6) * speedWave / 2; // Speed of sound wave divided by 2 (go and back)
-
+    //Serial.print(measures[i]);
+    //Serial.print(" ");
 
   }
 
@@ -175,7 +180,7 @@ float measure (){
   //average
 
 
-  return m;
+  return average(measures);
 }
 
 
@@ -190,7 +195,9 @@ void loop() {
 
   if (digitalRead(pinButtonMeasure) == true && prevState_ButtonMeasure == 0){
     prevState_ButtonMeasure = 1;
+    
     Serial.print(measure());
+    Serial.println(" = Final Measure");
   }else if (digitalRead(pinButtonMeasure) == false){
     prevState_ButtonMeasure = 0;
   }
