@@ -4,6 +4,10 @@
 
 #define pinSonarTriger 2
 #define pinSonarEcho 3
+#define pinButtonMeasure 5
+
+
+int prevState_ButtonMeasure = 0;
 
 
 float speedWave = 343;
@@ -45,6 +49,7 @@ float expotential (float base, float expoente){
 void setup() {
   pinMode(pinSonarTriger, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(pinSonarEcho, INPUT); // Sets the echoPin as an INPUT
+  pinMode(pinButtonMeasure, INPUT);
   Serial.begin(9600); // // Serial Communication is starting with 9600 of baudrate speed
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
@@ -91,7 +96,16 @@ void loop() {
   //Serial.printf("%0.8f",float(1/pow(durationMS,6)));
   //distance = durationMS*0.034/2;
   // Displays the distance on the Serial Monitor
-  Serial.print("Distance: ");
-  Serial.print(distance);
-  Serial.println("m");
+  //Serial.print("Distance: ");
+  //Serial.print(distance);
+  //Serial.println("m");
+
+  if (digitalRead(pinButtonMeasure) == true && prevState_ButtonMeasure == 0){
+    prevState_ButtonMeasure = 1;
+    Serial.print(measure());
+  }else if (digitalRead(pinButtonMeasure) == false){
+    prevState_ButtonMeasure = 0;
+  }
+
+
 }
