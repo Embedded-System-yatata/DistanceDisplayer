@@ -13,6 +13,7 @@
 
 #define DECIMAL_PLACES 2
 #define ZSCORELIMIT 2.5
+#define DISPLAY_INIT_DELAY 1500
 #define DISPLAY_DELAY   3500
 
 
@@ -404,17 +405,18 @@ void display_Init(){
 
   display.setBrightness(0x0f);
   display.setSegments(data);
-  delay(DISPLAY_DELAY);
+  delay(DISPLAY_INIT_DELAY);
   display.setSegments(blank);
+  data[0] = 0x00;
 }
 
-void displayMeasure (int a, int b, int c, int d){
+void displayMeasure (int a, int b, int c){
 
 
-  data[0] = display.encodeDigit(a);
-  data[1] = display.encodeDigit(b);
-  data[2] = display.encodeDigit(c);
-  data[3] = display.encodeDigit(d);
+  
+  data[1] = display.encodeDigit(a);
+  data[2] = display.encodeDigit(b);
+  data[3] = display.encodeDigit(c);
   display.setSegments(data);
   delay(DISPLAY_DELAY);
   display.setSegments(blank);
@@ -469,7 +471,7 @@ void loop() {
     
     Serial.print("\nWord: ");
     Serial.print(word);
-    displayMeasure(0, int(word[0]), int(word[2]), int(word[3]));
+    displayMeasure(int(word[0]), int(word[2]), int(word[3]));
 
 
     delete_Array(measureArrayPtr);
