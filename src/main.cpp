@@ -13,7 +13,7 @@
 
 #define DECIMAL_PLACES 2
 #define ZSCORELIMIT 2.5
-#define DISPLAY_DELAY   2000
+#define DISPLAY_DELAY   3500
 
 
 int prevState_ButtonMeasure = 0;
@@ -367,17 +367,32 @@ void float_To_String(float n, char* res, int afterpoint)
  
     // convert integer part to string
     int i = intToStr(ipart, res, 0);
- 
+    Serial.print("\nintToString i: ");
+    Serial.println(i);
     // check for display option after point
     if (afterpoint != 0) {
-        res[i] = '.'; // add dot
+      if(i == 0){
+        res[i] = '0'; // add dot
+        res[i+1] = '.';
+
+        // Get the value of fraction part upto given no.
+        // of points after dot. The third parameter
+        // is needed to handle cases like 233.007
+        fpart = fpart * pow(10, afterpoint);
  
+        intToStr((int)fpart, res + i + 2, afterpoint);
+
+      }else{
+        res[i] = '.'; // add dot
+
         // Get the value of fraction part upto given no.
         // of points after dot. The third parameter
         // is needed to handle cases like 233.007
         fpart = fpart * pow(10, afterpoint);
  
         intToStr((int)fpart, res + i + 1, afterpoint);
+      }
+        
     }
 }
 
@@ -454,7 +469,7 @@ void loop() {
     
     Serial.print("\nWord: ");
     Serial.print(word);
-    displayMeasure(0, int(word[0]), int(word[1]), int(word[2]));
+    displayMeasure(0, int(word[0]), int(word[2]), int(word[3]));
 
 
     delete_Array(measureArrayPtr);
