@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <math.h>
 
+#include <Arduino_FreeRTOS.h>
+#include <semphr.h> 
+
 
 #define pinSonarTriger 2
 #define pinSonarEcho 3
@@ -77,7 +80,7 @@ float expotential (float base, float expoente){
 }
 
 
-//TODO determinar size (elementos) do array
+
 float average(DynamicArray *array){
 
   //int n = sizeof(numbers)/sizeof(numbers[0]);
@@ -222,7 +225,7 @@ DynamicArray *removeOutliers(DynamicArray *array, float upFence, float downFence
   for (i = 0; i < array->size; i++){
 
     if (array->data[i] > upFence || array->data [i] < downFence || z[i] > ZSCORELIMIT || z[i] < -ZSCORELIMIT){
-      //TODO remover elemento
+
       
       Serial.print("\n Remove ");
       Serial.print(i);
