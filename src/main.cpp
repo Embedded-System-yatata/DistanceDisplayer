@@ -1,12 +1,20 @@
 #include <Arduino.h>
+#include <TM1637Display.h>
 #include <math.h>
+#include <stdio.h>
 
 
 #define pinSonarTriger 2
 #define pinSonarEcho 3
 #define pinButtonMeasure 5
+#define pinCLK 9
+#define pinDIO 10
 
+
+#define DECIMAL_PLACES 2
 #define ZSCORELIMIT 2.5
+#define DISPLAY_DELAY   2000
+
 
 int prevState_ButtonMeasure = 0;
 
@@ -16,8 +24,6 @@ int nMeasures = 50;
 
 long durationMS; // variable for the duration of sound wave travel
 double distance; // variable for the distance measurement
-
-
 
 typedef struct DynamicArray{
 
@@ -46,6 +52,21 @@ void delete_Array(DynamicArray *array){
 
 DynamicArray *measureArrayPtr;
 
+
+
+
+ 
+const uint8_t SEG_DONE[] = {
+  SEG_B | SEG_C | SEG_D | SEG_E | SEG_G,           // d
+  SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,   // O
+  SEG_C | SEG_E | SEG_G,                           // n
+  SEG_A | SEG_D | SEG_E | SEG_F | SEG_G            // E
+};
+ 
+TM1637Display display(pinCLK, pinDIO);
+
+uint8_t data[] = { 0xff, 0xff, 0xff, 0xff };
+uint8_t blank[] = { 0x00, 0x00, 0x00, 0x00 };
 
 
 
@@ -296,9 +317,94 @@ float measure (DynamicArray *array){
     Serial.print(" ");
   }
 
-  return average(array);
+  return float(average(array));
 }
 
+
+
+void reverse(char* str, int len)
+{
+    int i = 0, j = len - 1, temp;
+    while (i < j) {
+        temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+        i++;
+        j--;
+    }
+}
+ 
+// Converts a given integer x to string str[].
+// d is the number of digits required in the output.
+// If d is more than the number of digits in x,
+// then 0s are added at the beginning.
+int intToStr(int x, char str[], int d)
+{
+    int i = 0;
+    while (x) {
+        str[i++] = (x % 10) + '0';
+        x = x / 10;
+    }
+ 
+    // If number of digits required is more, then
+    // add 0s at the beginning
+    while (i < d)
+        str[i++] = '0';
+ 
+    reverse(str, i);
+    str[i] = '\0';
+    return i;
+}
+ 
+// Converts a floating-point/double number to a string.
+void float_To_String(float n, char* res, int afterpoint)
+{
+    // Extract integer part
+    int ipart = (int)n;
+ 
+    // Extract floating part
+    float fpart = n - (float)ipart;
+ 
+    // convert integer part to string
+    int i = intToStr(ipart, res, 0);
+ 
+    // check for display option after point
+    if (afterpoint != 0) {
+        res[i] = '.'; // add dot
+ 
+        // Get the value of fraction part upto given no.
+        // of points after dot. The third parameter
+        // is needed to handle cases like 233.007
+        fpart = fpart * pow(10, afterpoint);
+ 
+        intToStr((int)fpart, res + i + 1, afterpoint);
+    }
+}
+
+
+
+
+
+void display_Init(){
+
+  display.setBrightness(0x0f);
+  display.setSegments(data);
+  delay(DISPLAY_DELAY);
+  display.setSegments(blank);
+}
+
+void displayMeasure (int a, int b, int c, int d){
+
+
+  data[0] = display.encodeDigit(a);
+  data[1] = display.encodeDigit(b);
+  data[2] = display.encodeDigit(c);
+  data[3] = display.encodeDigit(d);
+  display.setSegments(data);
+  delay(DISPLAY_DELAY);
+  display.setSegments(blank);
+
+}
 
 
 
@@ -309,6 +415,8 @@ void setup() {
   Serial.begin(9600); // // Serial Communication is starting with 9600 of baudrate speed
   Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
   Serial.println("with Arduino UNO R3");
+
+  display_Init();
 
 }
 
@@ -336,9 +444,19 @@ void loop() {
 
     prevState_ButtonMeasure = 1;
     
-    Serial.print("\n");
-    Serial.print(measure(measureArrayPtr));
-    Serial.println(" = Final Measure");
+    float result = measure(measureArrayPtr);
+    Serial.print("\nFinal Measure = ");
+    Serial.println(result,5);
+    Serial.println(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES));
+    char word[DECIMAL_PLACES];
+    
+    float_To_String(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES), word, DECIMAL_PLACES);
+    
+    Serial.print("\nWord: ");
+    Serial.print(word);
+    displayMeasure(0, int(word[0]), int(word[1]), int(word[2]));
+
+
     delete_Array(measureArrayPtr);
 
   }else if (digitalRead(pinButtonMeasure) == false){
