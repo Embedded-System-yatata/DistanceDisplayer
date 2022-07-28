@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 #include <math.h>
-#include <stdio.h>
+#include <EEPROM.h>
 
 #define pinSonarTriger 2
 #define pinSonarEcho 3
@@ -16,6 +16,9 @@
 #define DISPLAY_DELAY   3500
 #define N_MEASURES 50
 #define SLEEP_TIME 100
+
+#define EEPROM_ADDRESS1 0
+#define EEPROM_ADDRESS2 1
 
 
 float speedWave = 343;
@@ -432,6 +435,16 @@ void displayMeasure (int a, int b, int c){
 }
 
 
+void eeprom_Write (int address, float data){
+
+
+  EEPROM.put(address,data);
+}
+
+void eeprom_Read (int address, float data){
+
+  EEPROM.get(address, data);
+}
 
 void setup() {
   pinMode(pinSonarTriger, OUTPUT); // Sets the trigPin as an OUTPUT
