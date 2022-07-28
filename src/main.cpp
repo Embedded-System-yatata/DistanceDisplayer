@@ -1,10 +1,6 @@
 #include <Arduino.h>
 #include <math.h>
 
-#include <Arduino_FreeRTOS.h>
-#include <semphr.h> 
-
-
 #define pinSonarTriger 2
 #define pinSonarEcho 3
 #define pinButtonMeasure 5
