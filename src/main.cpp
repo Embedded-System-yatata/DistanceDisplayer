@@ -15,6 +15,7 @@
 #define DISPLAY_INIT_DELAY 1500
 #define DISPLAY_DELAY   3500
 #define N_MEASURES 50
+#define SLEEP_TIME 100
 
 
 float speedWave = 343;
@@ -490,5 +491,6 @@ void loop() {
     prevState_ButtonMeasure = 0;
   }
 
+  sleep(SLEEP_TIME);
 
 }
