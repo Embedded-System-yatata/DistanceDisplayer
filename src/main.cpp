@@ -15,12 +15,13 @@
 #define ZSCORELIMIT 2.5
 #define DISPLAY_INIT_DELAY 1500
 #define DISPLAY_DELAY   3500
+#define N_MEASURES 50
+
+
+float speedWave = 343;
 
 
 int prevState_ButtonMeasure = 0;
-
-float speedWave = 343;
-int nMeasures = 50;
 
 
 long durationMS; // variable for the duration of sound wave travel
@@ -37,9 +38,16 @@ typedef struct DynamicArray{
 DynamicArray *new_Array(){
 
   DynamicArray *novo = (DynamicArray*) malloc(sizeof(DynamicArray));
-  novo->data = (float*) malloc(sizeof(float) * nMeasures);
-  novo->size = nMeasures;
+  novo->data = (float*) malloc(sizeof(float) * N_MEASURES);
+  novo->size = N_MEASURES;
   return novo;
+
+}
+
+void reset_Array (DynamicArray *array){
+
+  array->data = (float*) realloc(array->data, sizeof(float) * N_MEASURES);
+  array->size = N_MEASURES;
 
 }
 
@@ -231,13 +239,13 @@ DynamicArray *removeOutliers(DynamicArray *array, float upFence, float downFence
 
   float av = average(array);
   float *z;
-  z = (float*) malloc(array->size * sizeof(float));
+  z = (float*) malloc(N_MEASURES * sizeof(float));
   z = zScores(z, array, av, standard_Deviation(array, av));
 
   int i;
   Serial.print("\nZ-Scores: ");
-  for (i = 0; i < array->size; i++){
-    Serial.print(z[i]);
+  for (i = 0; i < N_MEASURES; i++){
+    Serial.print(z[i],5);
     Serial.print(" ");
   }
 
@@ -259,7 +267,7 @@ DynamicArray *removeOutliers(DynamicArray *array, float upFence, float downFence
     }
   }
 
-
+  free(z);
 
   return array;
 }
@@ -435,6 +443,12 @@ void setup() {
 
   display_Init();
 
+  measureArrayPtr = new_Array();
+
+  if(measureArrayPtr == NULL) {
+    Serial.println("Error! memory not allocated.");
+    exit(0);
+  }
 }
 
 
@@ -451,20 +465,17 @@ void loop() {
 
   if (digitalRead(pinButtonMeasure) == true && prevState_ButtonMeasure == 0){
 
-    //measureArrayPtr = (float*) malloc(nMeasures * sizeof(float));
-    measureArrayPtr = new_Array();
+    //measureArrayPtr = (float*) malloc(N_MEASURES * sizeof(float));
     
-    if(measureArrayPtr == NULL) {
-      Serial.println("Error! memory not allocated.");
-      exit(0);
-    }
+    
+    
 
     prevState_ButtonMeasure = 1;
     
     float result = measure(measureArrayPtr);
     Serial.print("\nFinal Measure = ");
     Serial.println(result,5);
-    Serial.println(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES));
+    Serial.println(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES),5);
     char word[DECIMAL_PLACES];
     
     float_To_String(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES), word, DECIMAL_PLACES);
@@ -474,9 +485,9 @@ void loop() {
     displayMeasure(int(word[0]), int(word[2]), int(word[3]));
 
 
-    delete_Array(measureArrayPtr);
+    reset_Array(measureArrayPtr);
 
-  }else if (digitalRead(pinButtonMeasure) == false){
+  }else if (digitalRead(pinButtonMeasure) == false && prevState_ButtonMeasure != 0){
     prevState_ButtonMeasure = 0;
   }
 
