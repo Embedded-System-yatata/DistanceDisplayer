@@ -475,9 +475,9 @@ void loop() {
     Serial.print("\nFinal Measure = ");
     Serial.println(result,5);
     Serial.println(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES),5);
-    char word[DECIMAL_PLACES];
+    char word[DECIMAL_PLACES+1];
     
-    float_To_String(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES), word, DECIMAL_PLACES);
+    float_To_String(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES), word, DECIMAL_PLACES+1);
     
     Serial.print("\nWord: ");
     Serial.print(word);
