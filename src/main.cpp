@@ -5,7 +5,10 @@
 
 #define pinSonarTriger 2
 #define pinSonarEcho 3
-#define pinButtonMeasure 5
+#define pinButtonMeasure 8
+#define pinButtonAddress1 6
+#define pinButtonAddress2 5
+#define pinButtonSave 7
 #define pinCLK 9
 #define pinDIO 10
 
@@ -25,11 +28,13 @@ float speedWave = 343;
 
 
 int prevState_ButtonMeasure = 0;
-
+int prevState_ButtonAddress1 = 0;
+int prevState_ButtonAddress2 = 0;
+int prevState_ButtonSave = 0;
 
 long durationMS; // variable for the duration of sound wave travel
-double distance; // variable for the distance measurement
-
+volatile float distance = 0; // variable for the distance measurement
+float aux = 0;
 typedef struct DynamicArray{
 
   float *data;
@@ -61,7 +66,7 @@ void delete_Array(DynamicArray *array){
 }
 
 
-
+//volatile DynamicArray *measureArrayPtr;
 DynamicArray *measureArrayPtr;
 
 
@@ -438,12 +443,16 @@ void displayMeasure (int a, int b, int c){
 void eeprom_Write (int address, float data){
 
 
-  EEPROM.put(address,data);
+  EEPROM.put(address, int(data*pow(10,DECIMAL_PLACES)));
 }
 
 void eeprom_Read (int address, float data){
 
-  EEPROM.get(address, data);
+  int aux;
+  EEPROM.get(address, aux);
+
+  data = float(aux*pow(10,-DECIMAL_PLACES));
+
 }
 
 void setup() {
@@ -476,22 +485,17 @@ void loop() {
   //Serial.print(distance);
   //Serial.println("m");
 
-  if (digitalRead(pinButtonMeasure) == true && prevState_ButtonMeasure == 0){
-
-    //measureArrayPtr = (float*) malloc(N_MEASURES * sizeof(float));
+  if (digitalRead(pinButtonMeasure) == true && prevState_ButtonMeasure == 0){ 
     
-    
-    
-
     prevState_ButtonMeasure = 1;
     
-    float result = measure(measureArrayPtr);
+    distance = measure(measureArrayPtr);
     Serial.print("\nFinal Measure = ");
-    Serial.println(result,5);
-    Serial.println(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES),5);
+    Serial.println(distance,5);
+    Serial.println(float(round(distance * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES),5);
     char word[DECIMAL_PLACES+1];
     
-    float_To_String(float(round(result * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES), word, DECIMAL_PLACES+1);
+    float_To_String(float(round(distance * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES), word, DECIMAL_PLACES+1);
     
     Serial.print("\nWord: ");
     Serial.print(word);
@@ -504,6 +508,60 @@ void loop() {
     prevState_ButtonMeasure = 0;
   }
 
-  sleep(SLEEP_TIME);
+
+  if (digitalRead(pinButtonSave) == true && prevState_ButtonSave == 0 && distance != 0){ 
+    
+    prevState_ButtonSave = 1;
+    Serial.print("Save: ");
+    while (1){
+
+      if (digitalRead(pinButtonSave) == true && prevState_ButtonSave == 0){
+        Serial.println("Break");
+        break;
+      }else if (digitalRead(pinButtonAddress1) == true){
+        prevState_ButtonAddress1 = 1;
+        eeprom_Write(EEPROM_ADDRESS1, distance);
+        Serial.println("Add1");
+        break;
+      }else if (digitalRead(pinButtonAddress2) == true){
+        prevState_ButtonAddress2 = 1;
+        eeprom_Write(EEPROM_ADDRESS2, distance);
+        Serial.println("Add2");
+        break;
+      }else if (digitalRead(pinButtonSave) == false){
+        prevState_ButtonSave = 0;
+      }
+
+    }
+
+  }else if (digitalRead(pinButtonSave) == false && prevState_ButtonSave != 0){
+    prevState_ButtonSave = 0;
+  }
+
+
+  if (digitalRead(pinButtonAddress1) == true && prevState_ButtonAddress1 == 0){ 
+    
+    prevState_ButtonAddress1 = 1;
+    eeprom_Read(EEPROM_ADDRESS1, aux);
+    Serial.print("Read Add1: ");
+    Serial.println(aux);
+
+  }else if (digitalRead(pinButtonAddress1) == false && prevState_ButtonAddress1 != 0){
+    prevState_ButtonAddress1 = 0;
+  }
+
+  if (digitalRead(pinButtonAddress2) == true && prevState_ButtonAddress2 == 0){ 
+
+    prevState_ButtonAddress2 = 1;
+    eeprom_Read(EEPROM_ADDRESS2, aux);
+    Serial.print("Read Add2: ");
+    Serial.println(aux);
+
+  }else if (digitalRead(pinButtonAddress2) == false && prevState_ButtonAddress2 != 0){
+    prevState_ButtonAddress2 = 0;
+  }
+
+
+  delay(SLEEP_TIME);
 
 }
