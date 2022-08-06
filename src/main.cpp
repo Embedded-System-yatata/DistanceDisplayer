@@ -34,7 +34,10 @@ int prevState_ButtonSave = 0;
 
 long durationMS; // variable for the duration of sound wave travel
 volatile float distance = 0; // variable for the distance measurement
-float aux = 0;
+
+
+float *aux;
+
 typedef struct DynamicArray{
 
   float *data;
@@ -442,16 +445,23 @@ void displayMeasure (int a, int b, int c){
 
 void eeprom_Write (int address, float data){
 
-
-  EEPROM.put(address, int(data*pow(10,DECIMAL_PLACES)));
+  Serial.print("EEPROM Save Func: ");
+  Serial.println(data);
+  EEPROM.update(address, int(data*pow(10,DECIMAL_PLACES)));
 }
 
-void eeprom_Read (int address, float data){
+float eeprom_Read (int address, float *data){
 
+  Serial.print("EEPROM Read Func: ");
+  Serial.println(*data);
   int aux;
   EEPROM.get(address, aux);
-
-  data = float(aux*pow(10,-DECIMAL_PLACES));
+  Serial.print("Aux: ");
+  Serial.println(aux);
+  *data = float(aux)*pow(10,-DECIMAL_PLACES);
+  Serial.print("Data: ");
+  Serial.println(*data);
+  return *data;
 
 }
 
@@ -471,6 +481,8 @@ void setup() {
     Serial.println("Error! memory not allocated.");
     exit(0);
   }
+
+  *aux = 0;
 }
 
 
@@ -478,27 +490,21 @@ void setup() {
 
 void loop() {
   
-  //Serial.printf("%0.8f",float(1/pow(durationMS,6)));
-  //distance = durationMS*0.034/2;
-  // Displays the distance on the Serial Monitor
-  //Serial.print("Distance: ");
-  //Serial.print(distance);
-  //Serial.println("m");
 
   if (digitalRead(pinButtonMeasure) == true && prevState_ButtonMeasure == 0){ 
     
     prevState_ButtonMeasure = 1;
-    
+    char word[DECIMAL_PLACES+1];
     distance = measure(measureArrayPtr);
     Serial.print("\nFinal Measure = ");
     Serial.println(distance,5);
     Serial.println(float(round(distance * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES),5);
-    char word[DECIMAL_PLACES+1];
+    
     
     float_To_String(float(round(distance * pow(10, DECIMAL_PLACES)))/pow(10, DECIMAL_PLACES), word, DECIMAL_PLACES+1);
     
     Serial.print("\nWord: ");
-    Serial.print(word);
+    Serial.println(word);
     displayMeasure(int(word[0]), int(word[2]), int(word[3]));
 
 
@@ -517,6 +523,7 @@ void loop() {
 
       if (digitalRead(pinButtonSave) == true && prevState_ButtonSave == 0){
         Serial.println("Break");
+        prevState_ButtonSave = 1;
         break;
       }else if (digitalRead(pinButtonAddress1) == true){
         prevState_ButtonAddress1 = 1;
@@ -539,12 +546,17 @@ void loop() {
   }
 
 
+
   if (digitalRead(pinButtonAddress1) == true && prevState_ButtonAddress1 == 0){ 
     
     prevState_ButtonAddress1 = 1;
-    eeprom_Read(EEPROM_ADDRESS1, aux);
+    char word[DECIMAL_PLACES+1];
+    float_To_String(eeprom_Read(EEPROM_ADDRESS1, aux), word, DECIMAL_PLACES);
+
+    //*aux = eeprom_Read(EEPROM_ADDRESS1, aux);
     Serial.print("Read Add1: ");
-    Serial.println(aux);
+    Serial.println(word);
+    displayMeasure(int(word[0]), int(word[2]), int(word[3]));
 
   }else if (digitalRead(pinButtonAddress1) == false && prevState_ButtonAddress1 != 0){
     prevState_ButtonAddress1 = 0;
@@ -553,9 +565,13 @@ void loop() {
   if (digitalRead(pinButtonAddress2) == true && prevState_ButtonAddress2 == 0){ 
 
     prevState_ButtonAddress2 = 1;
-    eeprom_Read(EEPROM_ADDRESS2, aux);
+    char word[DECIMAL_PLACES+1];
+    float_To_String(eeprom_Read(EEPROM_ADDRESS2, aux), word, DECIMAL_PLACES);
+
+    //*aux = eeprom_Read(EEPROM_ADDRESS1, aux);
     Serial.print("Read Add2: ");
-    Serial.println(aux);
+    Serial.println(word);
+    displayMeasure(int(word[0]), int(word[2]), int(word[3]));
 
   }else if (digitalRead(pinButtonAddress2) == false && prevState_ButtonAddress2 != 0){
     prevState_ButtonAddress2 = 0;
